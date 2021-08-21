@@ -1,7 +1,12 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using Pegasus.Abstraction.Graph.Rendering;
 using QuickGraph;
+using QuickGraph.Algorithms.Search;
 using QuickGraph.Graphviz;
 using QuickGraph.Graphviz.Dot;
+using static Pegasus.Abstraction.Graph.Rendering.DebugRenderer;
 
 namespace Pegasus.Abstraction.Graph.CLI
 {
@@ -11,37 +16,17 @@ namespace Pegasus.Abstraction.Graph.CLI
         {
             AdjacencyGraph<string, Edge<string>> graph = new AdjacencyGraph<string, Edge<string>>(true);
 
-            graph.AddVerticesAndEdge(new Edge<string>("test", "test"));
-            graph.AddVerticesAndEdge(new Edge<string>("test1", "test"));
-
-            graph.AddVerticesAndEdge(new Edge<string>("test2", "test1"));
-            graph.AddVerticesAndEdge(new Edge<string>("test2", "test1"));
-            graph.AddVerticesAndEdge(new Edge<string>("test2", "test1"));
-
+            graph.AddVerticesAndEdge(new Edge<string>("test4", "test1"));
+            graph.AddVerticesAndEdge(new Edge<string>("test2", "test4"));
+            graph.AddVerticesAndEdge(new Edge<string>("test3", "test1"));
+            graph.AddVerticesAndEdge(new Edge<string>("test4", "test3"));
 
             var graphviz = new GraphvizAlgorithm<string, Edge<string>>(graph);
-            graphviz.FormatEdge += OnFormatEdge;
+            
+            graphviz.FormatEdge += DebugRenderer.OnFormatEdge;
+            graphviz.FormatVertex += DebugRenderer.OnFormatVertex;
 
             string output = graphviz.Generate(new FileDotEngine(), "graph");
-        }
-
-        public static void OnFormatEdge(object obj, FormatEdgeEventArgs<string, Edge<string>> e)
-        {
-            e.EdgeFormatter.Label.Value = e.Edge.ToString();
-            e.EdgeFormatter.StrokeGraphvizColor = GraphvizColor.Black;
-        }
-
-        public sealed class FileDotEngine : IDotEngine
-        {
-            public string Run(GraphvizImageType imageType, string dot, string outputFileName)
-            {
-                string output = outputFileName;
-                File.WriteAllText(output, dot);
-
-                var args = string.Format(@"{0} -Tjpg -O", output);
-                System.Diagnostics.Process.Start(@"C:\Program Files (x86)\Graphviz\bin\dot.exe", args);
-                return output;
-            }
         }
     }
 }
